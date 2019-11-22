@@ -1,26 +1,66 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useState, FormEvent } from 'react';
+import AuthProvider, { useAuth } from './context/useAuth';
 
 const App: React.FC = () => {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <AuthProvider>
+      <Home />
+    </AuthProvider>
   );
+}
+
+const Home: React.FC = () => {  
+  const auth: any = useAuth()
+
+  return (    
+    <React.Fragment>
+      {auth && auth.user.isAuthenticated ? 'hi' : <Login />}
+    </React.Fragment>
+  )
+}
+
+const Login: React.FC = () => {
+  const auth: any = useAuth()
+
+  const [user, setUser] = useState<{email: string; password: string}>({email: '', password: ''})
+
+  const handleChange = (event: any) => {
+    setUser({
+      ...user,
+      [event.target.name]: event.target.value
+    })
+  }
+
+  const handleSubmit = (event: FormEvent, signUp: boolean = false) => {
+    event.preventDefault()
+    const { email, password } = user
+    signUp ? auth.signUp(email, password) : auth.signIn(email, password)
+  }
+
+  return (
+    <>
+      <form onSubmit={handleSubmit}>
+        <input
+         type="email" 
+         name="email" 
+         id="email" 
+         onChange={handleChange} 
+         value={user.email} 
+         placeholder="email"
+        />
+        <input
+         type="password" 
+         name="password" 
+         id="password" 
+         onChange={handleChange} 
+         value={user.password} 
+         placeholder="password"
+        />
+        <input type="submit" value="Login"/>
+        <input type="button" value="SignUp" onClick={(event: FormEvent) => handleSubmit(event, true)}/>
+      </form>
+    </>
+  )
 }
 
 export default App;
